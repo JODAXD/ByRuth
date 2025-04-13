@@ -142,9 +142,9 @@
       
           if (tipoEntrega === "Delivery") {
             const li = document.createElement("li");
-            li.innerHTML = `🚚 Cargo por delivery - Bs/ 15.00`;
+            li.innerHTML = `🚚 Cargo por delivery - Bs/ +10.00`;
             lista.appendChild(li);
-            subtotal += 15.00;
+            subtotal += 10.00;
           }
       
           totalElement.textContent = subtotal.toFixed(2);
@@ -197,8 +197,8 @@
           });
 
           if (entrega === "Delivery") {
-            mensaje += `- Cargo por delivery: Bs/ 15.00%0A`;
-            textoPlano += `- Cargo por delivery: Bs/ 15.00\n`;
+            mensaje += `- Cargo por delivery: Bs/ 10.00%0A`;
+            textoPlano += `- Cargo por delivery: Bs/ 10.00\n`;
           }
 
           textoPlano += `\nDescripción: ${descripcion}\nTOTAL: Bs/ ${total.toFixed(2)}\nGracias por tu compra!`;
