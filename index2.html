@@ -1,0 +1,235 @@
+<!DOCTYPE html> 
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini Donas by Ruth - Pedido</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <nav class="navbar navbar-dark bg-dark navbar-expand-lg">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="index2.html">PEDIDOS</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link" href="index.html">INICIO</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+    </nav>
+
+      <h2>Selecciona tus productos 🍩🧁</h2>
+      
+      <div class="productos">
+        <div class="producto" onclick="agregarAlCarrito('Dona Chocolate', 2.00)">
+          <img src="img2.png.jpg" alt="Dona Chocolate">
+          <strong>Dona Chocolate</strong><br>Bs/ 2.00
+        </div>
+        <div class="producto" onclick="agregarAlCarrito('Dona Vainilla', 2.00)">
+          <img src="img3.png.jpg" alt="Dona Vainilla">
+          <strong>Dona Vainilla</strong><br>Bs/ 2.00
+        </div>
+        <div class="producto" onclick="agregarAlCarrito('Queque Zanahoria', 15.00)">
+          <img src="img8.jpg" alt="Queque Zanahoria">
+          <strong>Queque Zanahoria</strong><br>Bs/ 15.00
+        </div>
+        <div class="producto" onclick="agregarAlCarrito('Queque Chocolate', 15.00)">
+          <img src="img8.jpg" alt="Queque Chocolate">
+          <strong>Queque Chocolate</strong><br>Bs/ 15.00
+        </div>
+      </div>
+      
+      <div class="formulario">
+        <h3>📋 Información del cliente</h3>
+        <input type="text" id="nombre" placeholder="Nombre completo" required style="width:100%; padding:8px; margin-bottom:10px;">
+        <input type="text" id="telefono" placeholder="Teléfono" required style="width:100%; padding:8px; margin-bottom:10px;">
+        <textarea id="descripcion" placeholder="Descripción del pedido (ej: sin maní, personalizado, etc)" style="width:100%; padding:8px; margin-bottom:10px;"></textarea>
+        <label>Fecha de entrega:</label>
+        <input type="date" id="fechaEntrega" style="width:100%; padding:8px; margin-bottom:10px;">
+        <label>Entrega:</label>
+        <select id="entrega" onchange="actualizarCarrito()" style="width:100%; padding:8px; margin-bottom:10px;">
+          <option value="Retiro en puerta">Retiro en puerta</option>
+          <option value="Delivery">Delivery</option>
+        </select>
+        <label>Método de pago:</label>
+        <select id="pago" onchange="mostrarQR()" style="width:100%; padding:8px; margin-bottom:10px;">
+          <option value="Efectivo">Efectivo</option>
+          <option value="QR">QR</option>
+        </select>
+        <div class="qr-container" id="qrContainer" style="display:none;">
+          <p>Escanea para pagar:</p>
+          <img src="qr.jpg" alt="QR de pago">
+        </div>
+        <label id="comprobanteLabel" style="display:none;">Subir comprobante de pago:</label>
+        <input type="file" id="comprobante" accept="image/*" style="width:100%; padding:8px; margin-bottom:10px; display:none;">
+      </div>
+      
+      <div class="carrito">
+        <h3>🛒 Tu carrito:</h3>
+        <ul id="listaCarrito"></ul>
+        <p class="total">Total: Bs/ <span id="total">0.00</span></p>
+        <button onclick="enviarPedido()">Enviar pedido por WhatsApp y generar comprobante</button>
+      </div>
+      
+      <script>
+        let carrito = [];
+        let total = 0;
+      
+        function agregarAlCarrito(producto, precio) {
+          const existente = carrito.find(item => item.producto === producto);
+          if (existente) {
+            existente.cantidad += 1;
+            existente.total = existente.cantidad * existente.precio;
+          } else {
+            carrito.push({ producto, precio, cantidad: 1, total: precio });
+          }
+          actualizarCarrito();
+        }
+      
+        function eliminarProducto(index) {
+          carrito.splice(index, 1);
+          actualizarCarrito();
+        }
+      
+        function actualizarCarrito() {
+          const lista = document.getElementById("listaCarrito");
+          const totalElement = document.getElementById("total");
+          const tipoEntrega = document.getElementById("entrega").value;
+      
+          lista.innerHTML = "";
+          let subtotal = 0;
+      
+          carrito.forEach((item, index) => {
+            subtotal += item.total;
+            const li = document.createElement("li");
+            li.innerHTML = `${item.producto} x${item.cantidad} - Bs/ ${item.total.toFixed(2)} 
+              <button class="btnEliminar" onclick="eliminarProducto(${index})">✖</button>`;
+            lista.appendChild(li);
+          });
+      
+          if (tipoEntrega === "Delivery") {
+            const li = document.createElement("li");
+            li.innerHTML = `🚚 Cargo por delivery - Bs/ 5.00`;
+            lista.appendChild(li);
+            subtotal += 5.00;
+          }
+      
+          totalElement.textContent = subtotal.toFixed(2);
+          total = subtotal;
+        }
+      
+        function mostrarQR() {
+          const metodo = document.getElementById("pago").value;
+          const qr = document.getElementById("qrContainer");
+          const labelComp = document.getElementById("comprobanteLabel");
+          const inputComp = document.getElementById("comprobante");
+      
+          if (metodo === "QR") {
+            qr.style.display = "block";
+            labelComp.style.display = "block";
+            inputComp.style.display = "block";
+          } else {
+            qr.style.display = "none";
+            labelComp.style.display = "none";
+            inputComp.style.display = "none";
+          }
+        }
+      
+        async function enviarPedido() {
+          const { jsPDF } = window.jspdf;
+          const nombre = document.getElementById("nombre").value;
+          const telefono = document.getElementById("telefono").value;
+          const descripcion = document.getElementById("descripcion").value;
+          const fechaEntrega = document.getElementById("fechaEntrega").value;
+          const entrega = document.getElementById("entrega").value;
+          const pago = document.getElementById("pago").value;
+          const comprobanteInput = document.getElementById("comprobante");
+
+          if (!nombre || !telefono || carrito.length === 0) {
+            alert("Completa todos los datos y agrega productos.");
+            return;
+          }
+
+          if (pago === "QR" && comprobanteInput.files.length === 0) {
+            alert("Por favor sube el comprobante de pago.");
+            return;
+          }
+
+          let mensaje = `Hola! Soy ${nombre} y quiero hacer el siguiente pedido:%0A`;
+          let textoPlano = `Mini Donas by Ruth - Pedido\n=============================\nCliente: ${nombre}\nTeléfono: ${telefono}\nEntrega: ${entrega}\nMétodo de pago: ${pago}\nFecha: ${fechaEntrega}\n\nProductos:\n`;
+
+          carrito.forEach(item => {
+            mensaje += `- ${item.producto} x${item.cantidad}: Bs/ ${item.total.toFixed(2)}%0A`;
+            textoPlano += `- ${item.producto} x${item.cantidad}: Bs/ ${item.total.toFixed(2)}\n`;
+          });
+
+          if (entrega === "Delivery") {
+            mensaje += `- Cargo por delivery: Bs/ 5.00%0A`;
+            textoPlano += `- Cargo por delivery: Bs/ 5.00\n`;
+          }
+
+          textoPlano += `\nDescripción: ${descripcion}\nTOTAL: Bs/ ${total.toFixed(2)}\nGracias por tu compra!`;
+
+          const doc = new jsPDF();
+          const comprobanteFile = comprobanteInput.files[0];
+          let comprobanteDataUrl = null;
+
+          if (comprobanteFile) {
+            comprobanteDataUrl = await new Promise(resolve => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result);
+              reader.readAsDataURL(comprobanteFile);
+            });
+          }
+
+          const imgData = await fetch("logoxd.png").then(r => r.blob()).then(blob => {
+            return new Promise(resolve => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result);
+              reader.readAsDataURL(blob);
+            });
+          });
+
+          doc.addImage(imgData, 'PNG', 70, 10, 60, 30);
+          doc.setFontSize(12);
+          doc.text(textoPlano, 10, 50);
+
+          if (comprobanteDataUrl) {
+            doc.addPage();
+            doc.text("Comprobante de pago adjunto:", 10, 20);
+            doc.addImage(comprobanteDataUrl, 'JPEG', 10, 30, 100, 100);
+          }
+
+          doc.save("comprobante_pedido.pdf");
+
+          const numero = "59169189412";
+          const url = `https://wa.me/${numero}?text=${mensaje}%0AFecha de entrega: ${fechaEntrega}%0AMétodo de pago: ${pago}%0ADetalles: ${descripcion}`;
+          window.open(url, '_blank');
+
+          carrito = [];
+          total = 0;
+          document.getElementById("nombre").value = "";
+          document.getElementById("telefono").value = "";
+          document.getElementById("descripcion").value = "";
+          document.getElementById("fechaEntrega").value = "";
+          document.getElementById("comprobante").value = "";
+          mostrarQR();
+          actualizarCarrito();
+        }
+      </script>
+      <footer class="footer text-center mt-4">
+        <a href="#" target="_blank"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://wa.me/59169189412" target="_blank"><i class="fab fa-whatsapp"></i></a>
+        <a href="https://www.tiktok.com/@mini.donasruth?_t=ZM-8vUJLbZmgdS&_r=1" target="_blank"><i class="fab fa-tiktok"></i></a>
+      </footer>
+      </body>
+      </html>
